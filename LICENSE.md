@@ -3,11 +3,17 @@
 2. **License Grant**: Licensor hereby grants Licensee a Sublicensable, Non-assignable & non-transferable, Non-commercial, Without the rights to create derivative works, Non-exclusive license, all with accordance with the terms set forth and other legal restrictions set forth in 3rd party software used while running Software.
 
 2.1 **Limited**: Licensee may use Software for the purpose of:
+
 2.1.1 Running Software on Licensee’s Website[s] and Server[s];
+
 2.1.2 Allowing 3rd Parties to run Software on Licensee’s Website[s] and Server[s];
+
 2.1.3 Publishing Software’s output to Licensee and 3rd Parties;
+
 2.1.4 Distribute verbatim copies of Software’s output (including compiled binaries);
+
 2.1.5 Modify Software to suit Licensee’s needs and specifications.
+
 
 2.2 **Binary Restricted**: Licensee may sublicense Software as a part of a larger work containing more than Software, distributed solely in Object or Binary form under a personal, non-sublicensable, limited license. Such redistribution shall be limited to unlimited codebases.
 
