@@ -17,19 +17,17 @@ class dirio:
   conf = ""                     # json loaded configuration
   outfiles = {}                 # A dictionary of data files
   que = Queue.Queue()           # The que is daemonically monitored and written to disk
-# shutdown = threading.Event()  # signal to shutdown threads
-# shutdown.clear()              # make sure the shutdown signal is false
   creationtime = ""             # used to create new dirfile after a certain time
-  logFile = ""              # The log file will record any IO errors
+  logFile = ""                  # The log file will record any IO errors
 
   # 
   def __init__(self, shutdown, autostart=False, path='/mnt/alfheim/data_default', confFile='./default_setup.txt', sympath='/mnt/alfheim/data_default/current/diode', dirtime=60000):
-    self.shutdown = shutdown
-    self.path = path
-    self.confFile = confFile
-    self.dirtime = dirtime  # The time frame for datacolleciton into a single dirfile
-    self.sympath = sympath
-    self.thread = threading.Thread(target=self.writeque, args=())
+    self.shutdown = shutdown    # shutdown signal
+    self.path     = path        # top data directory
+    self.confFile = confFile    # location of configuration file
+    self.dirtime  = dirtime     # The time frame for datacolleciton into a single dirfile
+    self.sympath  = sympath     # Symlink for most current data
+    self.thread   = threading.Thread(target=self.writeque, args=())
     
     if autostart:
       self.start()
