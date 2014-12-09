@@ -69,11 +69,19 @@ class dirio:
       os.makedirs(dirname)
     except OSError, e:
       if e.errno != 17:
-        raise # This was not a "directory exist" error..
+        raise # This was not a "file exists" error.
 
-    os.symlink(dirname, self.sympath)
+    try:
+      os.symlink(dirname, self.sympath)
+    except OSError, e:
+      if e.errno == 17:
+        os.unlink(self.sympath)
+        os.symlink(dirname, self.sympath)
+        print 'Symlink already existet. Please shutdown sleipnir properly next time!'
+      else:
+        raise # This is not a "file exists" error.
          
-    # now lets create all the file elementsbpsux842!
+    # now lets create all the file elemets
     
     samples = 0
     # Create a FORMAT file with sine, cosine, and time called out.
