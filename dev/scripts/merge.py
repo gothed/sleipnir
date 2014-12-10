@@ -33,8 +33,8 @@ class Merger( object ):
     self.start = start_time # Ignore anything before this time 
     self.stop  = stop_time  # Ignore anything after this time
     # translate the input into ctimes
-    self.cstart = mktime( strptime( time_start, time_format ) )
-    self.cstop  = mktime( strptime( time_stop , time_format ) )
+    self.cstart = mktime( strptime( start_time, time_format ) )
+    self.cstop  = mktime( strptime( stop_time , time_format ) )
     # define the sleipnir dictionary (refer to the man page)
     self.sleipnir = { 'channel0' : 'channel0 name' }
 
@@ -106,8 +106,10 @@ class Merger( object ):
     nfields = len( self.sleipnir ) + 1              # Number of fields, one for each channel + time
     data = empty( [0, nfields] )                    # setup an empty array to append to later
 
+    print data.shape
+
     for folder in folders:
-      data_list = avg_dirfile( folder )             # grab average dirfile
+      data_list = self.avg_dirfile( folder )             # grab average dirfile
       data = append( data, [data_list], axis = 0 )  # append average values to our data matrix
 
     print data.shape                                # lets just make sure it is what we expect
@@ -118,9 +120,9 @@ class Merger( object ):
     # Lets plot some serious business
     plt.figure(1)
     plt.title( 'title' )
-    for channel in sleipnir:
-      n = sleipnir.keys().index( channel )          # this is weird, but the index of the key maps to the index of the data matrix
-      plt.plot( time, data[:, n+1 ], 'o', color = next( colors ), label = sleipnir[ channel ] )
+    for channel in self.sleipnir:
+      n = self.sleipnir.keys().index( channel )     # this is weird, but the index of the key maps to the index of the data matrix
+      plt.plot( time, data[:, n+1 ], 'o', color = next( colors ), label = self.sleipnir[ channel ] )
       plt.legend()                                  # lets put a label on the legend
     plt.show()
 
@@ -128,21 +130,30 @@ class Merger( object ):
 #
 # MergerQ inherits from Merger but knows MisterQ's sleipnir configuration
 class MergerQ( Merger ):
-  sleipnir =  {
-  'adc2_ch3_COM':'60K Plate BF',
-  'adc2_ch4_COM':'60K Plate DFT',
-  'adc2_ch5_COM':'60K Plate HFT',
-  'adc2_ch6_COM':'60K Radiation 3/3',
-  'adc2_ch6_COM':'60K Radiation 2/3',
-  'adc2_ch6_COM':'60K Radiation 1/3',
-  'adc2_ch6_COM':'60K Radiation 0/3'
-  }
+  def __init__( self, mypath, start_time, stop_time, time_format = '%Y-%m-%d-%H-%M-%S' ):
+    # Init the super class
+    Merger.__init__( self, mypath, start_time, stop_time, time_format )
+    # Define sleipnir according to MisterQ's standards
+    self.sleipnir =  {
+      'adc2_ch3_COM':'60K Plate BF',
+      'adc2_ch4_COM':'60K Plate DFT',
+      'adc2_ch5_COM':'60K Plate HFT',
+      'adc2_ch6_COM':'60K Radiation 3/3',
+      'adc2_ch6_COM':'60K Radiation 2/3',
+      'adc2_ch6_COM':'60K Radiation 1/3',
+      'adc2_ch6_COM':'60K Radiation 0/3'
+    }
 
 
 def main():
   print 'Let the merging commence.'
+  # create the merger, Q, W, Wjr, HF
+  # needs ( path, start_time, stop_time )
+  merger = MergerQ( '/mnt/niflheim/misterq/rawdata/diodes', '2014-06-26-11-00-00', '2014-06-27-18-40-00' )
+  myfolders = merger.find_dirfiles()
+  merger.plot_averages( myfolders )
 
-if __name == "__main__":
+if __name__ == "__main__":
   main()
 
 """ Old file
