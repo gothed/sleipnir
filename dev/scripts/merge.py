@@ -22,19 +22,16 @@ from numpy import average
 from numpy import empty
 from numpy import append
 
+import sys
+import socket
 import struct
 import itertools
 import matplotlib.pyplot as plt
 
 class Merger( object ):
-  def __init__( self, mypath, start_time, stop_time, time_format = '%Y-%m-%d-%H-%M-%S' ):
+  def __init__( self, mypath, time_format = '%Y-%m-%d-%H-%M-%S' ):
     self.path = mypath      # Path to the folder containing the time stamped dirfiles
     self.frmt = time_format # Format used to stamp dirfiles
-    self.start = start_time # Ignore anything before this time 
-    self.stop  = stop_time  # Ignore anything after this time
-    # translate the input into ctimes
-    self.cstart = mktime( strptime( start_time, time_format ) )
-    self.cstop  = mktime( strptime( stop_time , time_format ) )
     # define the sleipnir dictionary (refer to the man page)
     self.sleipnir = { 'channel0' : 'channel0 name' }
 
@@ -77,7 +74,13 @@ class Merger( object ):
   #
   # find_dirfiles identifies all the folders between the given start:stop range
   # This is the Pedro Antonio Fluxa Rojas principle of finding dirfiles
-  def find_dirfiles( self ):
+  def find_dirfiles( self, start_time, stop_time ):
+    self.start = start_time # Ignore anything before this time 
+    self.stop  = stop_time  # Ignore anything after this time
+    # translate the input into ctimes
+    self.cstart = mktime( strptime( start_time, self.frmt ) )
+    self.cstop  = mktime( strptime( stop_time , self.frmt ) )
+
     # let us grab all the folder names and store them in mydrinames
     mydirnames = []
     for ( dirpath, dirnames, filenames ) in walk( self.path ):
@@ -102,14 +105,14 @@ class Merger( object ):
     myfolders.sort()  # lets just make sure they are sorted by date
     return myfolders  # now return the list of folders
 
-  def plot_averages( self, folders ):
+  def plot( self, folders, processor ):
     nfields = len( self.sleipnir ) + 1              # Number of fields, one for each channel + time
     data = empty( [0, nfields] )                    # setup an empty array to append to later
 
     print data.shape
 
     for folder in folders:
-      data_list = self.avg_dirfile( folder )             # grab average dirfile
+      data_list = processor( folder )               # manipulate the dirfile according to the processor function
       data = append( data, [data_list], axis = 0 )  # append average values to our data matrix
 
     print data.shape                                # lets just make sure it is what we expect
@@ -130,18 +133,31 @@ class Merger( object ):
 #
 # MergerQ inherits from Merger but knows MisterQ's sleipnir configuration
 class MergerQ( Merger ):
-  def __init__( self, mypath, start_time, stop_time, time_format = '%Y-%m-%d-%H-%M-%S' ):
+  def __init__( self, mypath, time_format = '%Y-%m-%d-%H-%M-%S' ):
     # Init the super class
-    Merger.__init__( self, mypath, start_time, stop_time, time_format )
+    Merger.__init__( self, mypath, time_format )
     # Define sleipnir according to MisterQ's standards
+    # comment anything you don't want to plot
     self.sleipnir =  {
       'adc2_ch3_COM':'60K Plate BF',
       'adc2_ch4_COM':'60K Plate DFT',
       'adc2_ch5_COM':'60K Plate HFT',
-      'adc2_ch6_COM':'60K Radiation 3/3',
-      'adc2_ch6_COM':'60K Radiation 2/3',
-      'adc2_ch6_COM':'60K Radiation 1/3',
-      'adc2_ch6_COM':'60K Radiation 0/3'
+#      'adc2_ch6_COM':'60K Radiation 3/3',
+      'adc2_ch7_COM':'60K Radiation 2/3',
+#      'adc2_ch8_COM':'60K Radiation 1/3',
+      'adc2_ch9_COM':'60K Radiation 0/3',
+      'adc2_ch10_COM':'Free Floating',
+      'adc2_ch11_COM':'Thermal Filter Stack',
+      'adc1_ch0_COM':'Cal Plate',
+      'adc1_ch1_COM':'Cal Plate',
+      'adc1_ch2_COM':'SA Heat Sink',
+      'adc1_ch3_COM':'BF Wire FT',
+      'adc1_ch4_COM':'4K Radiation 3/3',
+#      'adc1_ch5_COM':'4K Radiation 2/3',
+      'adc1_ch6_COM':'4K Radiation 1/3',
+#      'adc1_ch7_COM':'4K Radiation 0/3',
+      'adc1_ch8_COM':'Free Float',
+      'adc1_ch9_COM':'Thermal Filter Stack'      
     }
 
 
@@ -149,9 +165,21 @@ def main():
   print 'Let the merging commence.'
   # create the merger, Q, W, Wjr, HF
   # needs ( path, start_time, stop_time )
-  merger = MergerQ( '/mnt/niflheim/misterq/rawdata/diodes', '2014-06-26-11-00-00', '2014-06-27-18-40-00' )
-  myfolders = merger.find_dirfiles()
-  merger.plot_averages( myfolders )
+  # refer to man page for sys arg usage
+  path        = sys.argv[1] # Data path
+  start_time  = sys.argv[2] # start date
+  stop_time   = sys.argv[3] # stop date
+
+  hostname = socket.gethostname()
+
+  if hostname == 'misterq':
+    merger = MergerQ( path )
+  else:
+    print 'Host not known, will use MisterQ configuration.'
+    merger = MergerQ( path )
+  myfolders = merger.find_dirfiles( start_time, stop_time )
+  # you can define a custom dirfile processor and pass this to the plot function instead
+  merger.plot( myfolders, merger.avg_dirfile )
 
 if __name__ == "__main__":
   main()
