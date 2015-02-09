@@ -22,7 +22,8 @@ class insio:
     self.autostart = autostart
     
     #self.stream = serial.serial_for_url(url=stream, baudrate=baud, stopbits=2, rtscts=1, timeout = 2, do_not_open=True)
-    self.stream  = serial.Serial(port=stream, baudrate=baud, stopbits=2, rtscts=1, timeout = 2) # Connect to instrument VCP
+    self.stream  = serial.Serial(port=None, baudrate=baud, stopbits=2, rtscts=1, timeout = 2) # Connect to instrument VCP
+    self.stream.port = stream
     self.pktsize = pktsize # STD size of COBS package
     self.thread = threading.Thread(target=self.findpkts,args=())
     
