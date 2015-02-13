@@ -61,7 +61,7 @@ class dirio:
   # Given a configuration, the dirfiles are opened.
   def dirsetup(self):
     self.creationtime = time.time()
-    dirname = os.path.join(self.path, datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
+    dirname = os.path.join(self.path, datetime.datetime.utcnow().strftime('%Y-%m-%d-%H-%M-%S'))
 
     try:
       os.makedirs(dirname)

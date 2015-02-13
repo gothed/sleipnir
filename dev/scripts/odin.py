@@ -129,7 +129,7 @@ def main():
 				ns = True)
 	if hostname == 'missw':
 		print time.strftime('%H%m.%S %d:%m:%Y',time.gmtime()) + ' ::: Odin [Status]: The host has identified herself as MissW!'
-		odin = Odin('/mnt/uranus/missw/rawdata/diodes', '/mnt/uranus/missw/conf.txt', '/mnt/uranus/missw/current/diode', '/dev/ttyUSB1', 1250000)
+		odin = Odin('/mnt/uranus/missw/rawdata/diodes', '/mnt/uranus/missw/conf.txt', '/mnt/uranus/missw/current/diode', '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AM01YE50-if00-port0', 1250000)
 		Pyro4.config.HOST = "192.168.0.68"
 		Pyro4.Daemon.serveSimple(
 				{
